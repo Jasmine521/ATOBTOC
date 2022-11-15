@@ -12,4 +12,6 @@ public interface CounterService {
   void upsertCount(Counter counter);
 
   void clearCount(Integer id);
+
+  Long aplusb(Long a,Long b);
 }
