@@ -1,8 +1,11 @@
 package com.tencent.wxcloudrun.controller;
 
-import io.swagger.annotations.Api;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.tencent.wxcloudrun.feign.CourseClient;
+import com.tencent.wxcloudrun.model.Token;
+import com.tencent.wxcloudrun.service.TokenService;
 import io.swagger.annotations.ApiOperation;
-import org.apache.ibatis.annotations.Param;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.tencent.wxcloudrun.config.ApiResponse;
@@ -10,24 +13,29 @@ import com.tencent.wxcloudrun.dto.CounterRequest;
 import com.tencent.wxcloudrun.model.Counter;
 import com.tencent.wxcloudrun.service.CounterService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
-import java.util.Optional;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * counter控制器
  */
 @RestController
-
 public class CounterController {
 
   final CounterService counterService;
   final Logger logger;
 
-  public CounterController(@Autowired CounterService counterService) {
+  final TokenService tokenService;
+  @Autowired
+  private CourseClient feigonService;
+
+  public CounterController(@Autowired CounterService counterService, TokenService tokenService) {
     this.counterService = counterService;
+    this.tokenService = tokenService;
     this.logger = LoggerFactory.getLogger(CounterController.class);
   }
 
@@ -93,5 +101,24 @@ public class CounterController {
   ApiResponse plusab(@RequestParam Long a, @RequestParam Long b){
     return ApiResponse.ok(counterService.aplusb(a,b));
   }
-  
+
+
+  @GetMapping("/this")
+  String thix(@RequestParam String acces){
+    acces = feigonService.openidget("jimo");
+    final String s = acces.split("\'")[3];
+    final String courseId = feigonService.courseurlget(s).split("\"")[9];
+    JSONObject jsonObject = new JSONObject();
+    jsonObject.put("course",courseId);
+    jsonObject.put("nid","");
+    jsonObject.put("cardNo","ybb");
+    List<Token> token = tokenService.getToken(1);
+    List<String > rs = new ArrayList<>();
+    token.forEach(e->{
+      jsonObject.put("nid", e.getPid());
+      jsonObject.put("cardNo",e.getName());
+      rs.add(feigonService.joincourse(feigonService.openidget(e.getQcshopenid()).split("\'")[3], jsonObject.toJSONString()));
+    });
+    return rs.toString();
+  }
 }
