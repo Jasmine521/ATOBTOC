@@ -103,9 +103,10 @@ public class CounterController {
   }
 
 
+  @ApiOperation("thiswucan")
   @GetMapping("/this")
-  String thix(@RequestParam String acces){
-    acces = feigonService.openidget("jimo");
+  String thix(){
+    String acces = feigonService.openidget("jimo");
     final String s = acces.split("\'")[3];
     final String courseId = feigonService.courseurlget(s).split("\"")[9];
     JSONObject jsonObject = new JSONObject();
